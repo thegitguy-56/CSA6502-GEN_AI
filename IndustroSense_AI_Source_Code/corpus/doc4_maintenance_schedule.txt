@@ -1,0 +1,18 @@
+DOC_ID: REF-SCHED-07
+TITLE: Preventive Maintenance Interval Reference - Rotating Equipment (Reference Table)
+
+Equipment Class: Centrifugal Pump (CP-2xx series)
+- Bearing grease replenishment: every 4,000 operating hours
+- Bearing full replacement: every 18,000 operating hours (or immediately if defect-frequency vibration amplitude exceeds 4.5 mm/s)
+- Mechanical seal inspection: every 8,000 operating hours
+- Mechanical seal replacement: every 20,000-22,000 operating hours (design life)
+- Alignment check: every 4,000 operating hours or after any coupling disturbance
+- Vibration baseline survey: every 720 operating hours (approx. monthly)
+
+Calculation Rule (used by the maintenance-schedule lookup tool):
+next_service_hours = last_service_hours + interval_hours
+If current_operating_hours >= next_service_hours, the component is DUE or OVERDUE.
+overdue_by_hours = current_operating_hours - next_service_hours (report only if positive)
+
+Notes:
+Intervals above are manufacturer defaults for the CP-2xx series operating in standard duty (ambient below 40 C, clean feedwater service). Severe duty (contaminated fluid, ambient above 40 C) shortens all intervals by 25%.

@@ -1,0 +1,25 @@
+DOC_ID: SOP-MECH-014
+TITLE: Standard Operating Procedure - Rotating Equipment Bearing Inspection (SOP-MECH-014, Rev 3)
+
+1. Purpose
+This SOP defines the steps for periodic and fault-triggered inspection of rolling-element bearings on rotating equipment including pumps, motors, and fans.
+
+2. Trigger Conditions
+Perform an unscheduled inspection when any of the following occur:
+- Vibration alarm (Zone C or D per ISO 10816) raised by condition monitoring system.
+- Audible grinding, screeching, or rhythmic knocking from the bearing housing.
+- Bearing housing temperature exceeds 80 degrees C or rises more than 15 degrees C above ambient baseline within one shift.
+- Visible grease discoloration (dark brown/black) or metallic particles in used grease sample.
+
+3. Inspection Steps
+Step 1: Isolate and lock out equipment per LOTO-GEN-001.
+Step 2: Remove bearing housing cover; photograph bearing races and rolling elements before cleaning.
+Step 3: Inspect for spalling, pitting, discoloration (bluing indicates overheating), and brinelling (indentations from static overload).
+Step 4: Measure radial and axial play with a dial gauge; compare to OEM tolerance (typically 0.01-0.04 mm for this bearing class).
+Step 5: If any defect is found, tag the component as "DO NOT OPERATE" and escalate to the maintenance engineer for replacement scheduling.
+
+4. Documentation
+Log all findings, including photographs and vibration spectra, into the CMMS incident record with the equipment tag number and inspection date.
+
+5. Related Fault Codes
+Cross-reference with pump manual codes CP204-E11 and CP204-E12 for centrifugal pump bearing alarms.

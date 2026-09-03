@@ -1,0 +1,24 @@
+DOC_ID: MAN-CP-204
+TITLE: Centrifugal Pump Model CP-204 - Operation and Maintenance Manual (Excerpt, Section 7: Vibration and Bearing Faults)
+
+7.1 Overview
+The CP-204 centrifugal pump uses a horizontally mounted rotor supported by two grease-lubricated ball bearings. Excessive vibration is one of the most common field complaints and is frequently linked to bearing wear, shaft misalignment, or cavitation.
+
+7.2 Diagnosing High Vibration
+If overall vibration velocity exceeds 7.1 mm/s RMS (ISO 10816 Zone C or worse), technicians should first check for the following, in order:
+1. Coupling alignment - verify angular and parallel offset are within 0.05 mm using a dial indicator or laser alignment tool.
+2. Bearing condition - listen for grinding or high-pitched whine; a spectrum analysis peak near the bearing defect frequency indicates race or ball damage.
+3. Cavitation - a crackling or "gravel" sound near the suction flange, combined with reduced discharge pressure, suggests insufficient Net Positive Suction Head (NPSH).
+4. Loose foundation bolts or baseplate grouting failure.
+
+7.3 Bearing Replacement Procedure
+Bearings should be replaced every 18,000 operating hours or immediately if defect-frequency vibration amplitude exceeds 4.5 mm/s. Use only manufacturer-approved bearing part number BRG-6205-2RS. Do not reuse removed bearings.
+
+7.4 Common Fault Codes
+- CP204-E11: High vibration, non-drive-end bearing
+- CP204-E12: High vibration, drive-end bearing
+- CP204-E20: Suction cavitation warning
+- CP204-E31: Seal leakage detected
+
+7.5 Safety Note
+Always lock out and tag out (LOTO) the motor supply before removing the coupling guard or bearing housing.

@@ -1,0 +1,172 @@
+
+==============================================================================
+STEP 1: BUILD RAG INDEX (chunking + TF-IDF/SVD embedding + FAISS)
+==============================================================================
+Documents loaded : 5
+  - MAN-CP-204     Centrifugal Pump Model CP-204 - Operation and Maintenance Manual (Exce
+  - SOP-MECH-014   Standard Operating Procedure - Rotating Equipment Bearing Inspection (
+  - LOG-INC-2026   Incident Log Extract - Rotating Equipment, Plant Line 3 (2026)
+  - REF-SCHED-07   Preventive Maintenance Interval Reference - Rotating Equipment (Refere
+  - POL-AI-003     Plant Digital Systems - AI-Assisted Diagnostics Governance Policy (Exc
+Total chunks      : 22  (chunk_size=60 words, overlap=15 words)
+Embedding dim     : 128 (TF-IDF -> TruncatedSVD)
+Index build time  : 0.0102 s
+
+==============================================================================
+STEP 2: RETRIEVAL - SAMPLE QUERY 1
+==============================================================================
+Query: Non-drive-end bearing on the pump is making a high pitched whining noise and vibration is rising
+Latency: 0.64 ms
+Top-3 retrieved chunks:
+  [1] score=0.7042  MAN-CP-204::chunk4
+      4.5 mm/s. Use only manufacturer-approved bearing part number BRG-6205-2RS. Do not reuse removed bearings. 7.4 Common Fault Codes - CP204-E11: High vibration, no...
+  [2] score=0.6945  LOG-INC-2026::chunk0
+      DOC_ID: LOG-INC-2026 TITLE: Incident Log Extract - Rotating Equipment, Plant Line 3 (2026) INCIDENT 2026-0142 Equipment: CP-204 Feedwater Pump, Tag P-301 Date: ...
+  [3] score=0.2698  MAN-CP-204::chunk2
+      and parallel offset are within 0.05 mm using a dial indicator or laser alignment tool. 2. Bearing condition - listen for grinding or high-pitched whine; a spect...
+
+==============================================================================
+STEP 3: RETRIEVAL - SAMPLE QUERY 2
+==============================================================================
+Query: What should I check if there is crackling noise near the pump suction and discharge pressure dropped?
+Latency: 0.47 ms
+Top-3 retrieved chunks:
+  [1] score=0.8357  LOG-INC-2026::chunk2
+      Date: 2026-04-03 Symptom: Crackling noise near suction flange, discharge pressure dropped 12% below setpoint. No fault code raised initially. Root Cause: Suctio...
+  [2] score=0.6557  LOG-INC-2026::chunk1
+      Cause: Bearing outer race spalling caused by grease contamination during a prior maintenance window. Corrective Action: Replaced bearing with BRG-6205-2RS, re-g...
+  [3] score=0.4926  MAN-CP-204::chunk2
+      and parallel offset are within 0.05 mm using a dial indicator or laser alignment tool. 2. Bearing condition - listen for grinding or high-pitched whine; a spect...
+
+==============================================================================
+STEP 4: RAG-AUGMENTED PROMPT (query 1, truncated preview)
+==============================================================================
+SYSTEM: You are IndustroSense AI, an industrial diagnostic assistant. Answer ONLY using the numbered sources below. Cite sources as [n]. If the sources are insufficient, say so explicitly.
+
+SOURCES:
+[1] (Source: MAN-CP-204 | score=0.704)
+4.5 mm/s. Use only manufacturer-approved bearing part number BRG-6205-2RS. Do not reuse removed bearings. 7.4 Common Fault Codes - CP204-E11: High vibration, non-drive-end bearing - CP204-E12: High vibration, drive-end bearing - CP204-E20: Suction cavitation warning - CP204-E31: Seal leakage detected 7.5 Safety Note Always lock out and tag out (LOTO) the motor supply before removing the coupling guard or bearing
+
+[2] (Source: LOG-INC-2026 | score=0.694)
+DOC_ID: LOG-INC-2026 TITLE: Incident Log Extract - Rotating Equipment, Plant Line 3 (2026) INCIDENT 2026-0142 Equipment: CP-204 Feedwater Pump, Tag P-301 Date: 2026-02-11 Symptom: Operator reported rising
+... [truncated for report] ...
+
+==============================================================================
+STEP 5: AI AGENT DECISION TRACE - retrieval-only query
+==============================================================================
+  Thought     : Query mentions schedule/interval keywords: False. Decide whether to call schedule_tool, retrieve_tool, or both.
+  Action      : Call retrieve_tool(query='Non-drive-end bearing on the pump is making a high pitched whining noise and vibration is rising', k=3)
+  Observation : Retrieved 3 chunks: MAN-CP-204::chunk4, LOG-INC-2026::chunk0, MAN-CP-204::chunk2
+  Final Decision: Sufficient grounding found; compose RAG-augmented answer.
+
+==============================================================================
+STEP 6: AI AGENT DECISION TRACE - schedule-calculator query
+==============================================================================
+Query: Is the bearing replacement overdue if last service was at 15000 hours and current operating hours is 34500?
+  Thought     : Query mentions schedule/interval keywords: True. Decide whether to call schedule_tool, retrieve_tool, or both.
+  Action      : Call schedule_tool(component='bearing_replacement', last_service_hours=15000, current_operating_hours=34500)
+  Observation : {'component': 'bearing_replacement', 'interval_hours': 18000, 'next_service_hours': 33000, 'current_operating_hours': 34500, 'overdue_by_hours': 1500, 'status': 'OVERDUE'}
+  Thought     : Also retrieve supporting reference text for interval justification.
+  Action      : Call retrieve_tool(query='Is the bearing replacement overdue if last service was at 15000 hours and current operating hours is 34500?', k=2)
+  Observation : Retrieved 2 supporting chunks: REF-SCHED-07::chunk1, REF-SCHED-07::chunk0
+Schedule tool result: {'component': 'bearing_replacement', 'interval_hours': 18000, 'next_service_hours': 33000, 'current_operating_hours': 34500, 'overdue_by_hours': 1500, 'status': 'OVERDUE'}
+
+==============================================================================
+STEP 7: AI AGENT DECISION TRACE - ambiguous query -> clarifying question
+==============================================================================
+Query: When is the seal due for service?
+  Thought     : Query mentions schedule/interval keywords: True. Decide whether to call schedule_tool, retrieve_tool, or both.
+  Action      : Insufficient numeric fields (need component, last_service_hours, current_operating_hours) to call schedule_tool.
+  Observation : Missing structured inputs; cannot compute schedule deterministically.
+  Final Decision: Ask clarifying question (no guessing on safety-relevant numbers).
+Clarifying question returned to user: To compute the maintenance schedule, please provide: component name (bearing/seal/alignment), last service hour reading, and current operating hours.
+
+==============================================================================
+STEP 8: MULTIMODAL FUSION - Test Case A (text + image + speech)
+==============================================================================
+Modalities used     : ['text', 'image', 'speech']
+Image caption       : Close-up of a pump bearing housing. Grease visible at the seal is dark brown/black in colour. Housing surface shows no visible cracks. Mild rust staining near the mounting bolt.
+Image confidence    : 0.81
+Speech transcript   : There's a whining noise coming from the non drive end bearing on pump three oh one, it's gotten louder over the last two shifts.
+Speech confidence   : 0.88
+Overall confidence  : 0.81
+Needs human review  : False
+
+==============================================================================
+STEP 9: MULTIMODAL FUSION - Test Case B (text + image + speech, cavitation)
+==============================================================================
+Modalities used     : ['text', 'image', 'speech']
+Image caption       : Photograph of a suction strainer basket partially covered in fibrous debris and scale buildup, reducing open flow area.
+Image confidence    : 0.81
+Speech transcript   : I hear a crackling sound near the suction side of pump three oh five and the discharge pressure gauge looks low.
+Speech confidence   : 0.88
+Overall confidence  : 0.81
+Needs human review  : False
+
+==============================================================================
+STEP 10: SECURITY / INPUT VALIDATION TEST CASES
+==============================================================================
+  valid_text         -> PASS(valid)  errors=[]
+  empty_text         -> REJECTED     errors=['Text query is empty.']
+  oversized_text     -> REJECTED     errors=['Text query exceeds max length 2000 chars.']
+  prompt_injection   -> REJECTED     errors=["Potential prompt-injection pattern detected: 'reveal (your|the) (prompt|api key|credentials)'."]
+  valid_image        -> PASS(valid)  errors=[]
+  bad_ext_image      -> REJECTED     errors=["Disallowed image extension '.exe'."]
+  oversized_image    -> REJECTED     errors=['Image exceeds max size 8388608 bytes.']
+  valid_audio        -> PASS(valid)  errors=[]
+
+==============================================================================
+STEP 11: RATE LIMITER TEST (max 3 requests / 60s window)
+==============================================================================
+  Request 1: ALLOWED
+  Request 2: ALLOWED
+  Request 3: ALLOWED
+  Request 4: BLOCKED (rate limit exceeded)
+  Request 5: BLOCKED (rate limit exceeded)
+
+==============================================================================
+STEP 12: AUDIT LOGGING
+==============================================================================
+Audit log written to: /home/claude/industrosense/src/../outputs/audit_log.jsonl
+  2026-09-02T09:04:52Z | user=tech_rohan | conf=0.81 | flagged=False
+  2026-09-02T09:04:52Z | user=tech_rohan | conf=None | flagged=False
+  2026-09-02T09:04:52Z | user=tech_rohan | conf=0.81 | flagged=False
+
+==============================================================================
+STEP 13: MODEL CARD
+==============================================================================
+system_name:
+  IndustroSense AI
+
+version:
+  0.1.0 (lab prototype)
+
+intended_use:
+  Assist field engineers/technicians in diagnosing CP-2xx series centrifugal feedwater pump faults using text, image, and voice fault reports, grounded in the plant's manuals/SOPs/incident-log corpus.
+
+out_of_scope_use:
+  Not validated for equipment types outside the CP-2xx pump family; not a substitute for a certified engineer's sign-off on safety-critical actions; not for autonomous control of plant equipment.
+
+training_data:
+  No model was fine-tuned; the system uses retrieval over a fixed, versioned document corpus (5 sample documents, see References) and simulated vision/speech stand-ins documented in multimodal.py.
+
+known_limitations:
+  - Embeddings are a local TF-IDF+SVD substitute, not a hosted semantic embedding model; retrieval quality is weaker for paraphrased or synonym-heavy queries.
+  - Vision and speech modules are simulated stand-ins in this lab environment, not production VLM/ASR.
+  - No formal red-teaming has been performed; prompt-injection filtering is pattern-based only.
+
+human_oversight:
+  Outputs with overall confidence below 0.60 are auto-flagged 'AI-Generated - Requires Human Review' per governance policy POL-AI-003 Section 3.1.
+
+data_handling:
+  Uploaded images/voice notes are treated as operational data; retention and PII handling follow POL-AI-003 Section 3.2 (not implemented as a retention job in this lab prototype).
+
+
+==============================================================================
+STEP 14: RETRIEVAL QUALITY SUMMARY TABLE (manual relevance judgement)
+==============================================================================
+Query                                          Top-1 chunk            Top-1 score Relevant?(manual)
+Non-drive-end bearing on the pump is making    MAN-CP-204::chunk4     0.7042      Yes
+What should I check if there is crackling no   LOG-INC-2026::chunk2   0.8357      Yes
+
+DEMO RUN COMPLETE.

@@ -1,0 +1,26 @@
+DOC_ID: LOG-INC-2026
+TITLE: Incident Log Extract - Rotating Equipment, Plant Line 3 (2026)
+
+INCIDENT 2026-0142
+Equipment: CP-204 Feedwater Pump, Tag P-301
+Date: 2026-02-11
+Symptom: Operator reported rising vibration on non-drive-end bearing over 3 shifts, accompanied by a faint whining noise. Fault code CP204-E11 raised.
+Root Cause: Bearing outer race spalling caused by grease contamination during a prior maintenance window.
+Corrective Action: Replaced bearing with BRG-6205-2RS, re-greased with approved lubricant, verified alignment. Vibration returned to 2.1 mm/s RMS (Zone A).
+Downtime: 6.5 hours.
+
+INCIDENT 2026-0198
+Equipment: CP-204 Feedwater Pump, Tag P-305
+Date: 2026-04-03
+Symptom: Crackling noise near suction flange, discharge pressure dropped 12% below setpoint. No fault code raised initially.
+Root Cause: Suction strainer partially clogged, reducing NPSH available below NPSH required, causing cavitation.
+Corrective Action: Cleaned strainer, confirmed suction valve fully open. Cavitation noise stopped, discharge pressure restored.
+Downtime: 2 hours.
+
+INCIDENT 2026-0231
+Equipment: CP-204 Feedwater Pump, Tag P-301
+Date: 2026-06-19
+Symptom: Seal leakage detected during routine inspection, fault code CP204-E31.
+Root Cause: Mechanical seal face wear consistent with end-of-life at 21,000 operating hours.
+Corrective Action: Seal replaced per manufacturer kit SK-204. Leak test passed.
+Downtime: 3 hours.
